@@ -3,22 +3,21 @@
 
 require 'set'
 require "./drink"
-#購入処理の際@tmpがfallとrefundで2回clearされる
+require "./stock"
+
 class Vending_machine
-  attr_reader :amount, :sale_amount, :drinks, :change_stock, :sale_stock
+  attr_reader :amount, :sale_amount, :drinks, :change_stock, :sale_stock, :tmp_stock
   
   def initialize
     @amount, @sale_amount = 0, 0
     @usable_money = Set.new [10, 50, 100, 500, 1000]
-    
     @random_list = Set.new [:お茶, :コーラ, :ダイエットコーラ]
-    #釣銭管理用にtmpストック，釣銭ストック，売上ストックを作る
-    @tmp_stock, @sale_stock = Hash.new(0), Hash.new(0)
-    @change_stock = {10 => 10, 50 => 10, 100 => 10, 500 => 10, 1000 => 10}
-    #硬貨(紙幣)を大きい順に並べたもの
-    @change_list = change_stock.keys.sort{|a, b| b <=> a}
     
-    #最初の商品コーラをストック
+    #釣銭管理用にtmpストック，釣銭ストック，売上ストックを作る
+    @tmp_stock, @sale_stock = Stock.new(0), Stock.new(0)
+    @change_stock = Stock[10,10, 50,10, 100,10, 500,10, 1000,10]
+    
+    #最初の商品コーラを格納
     @drinks = {}
     self.register(:コーラ, 120)
     5.times{self.add(:コーラ, 2019, 7, 12)}
@@ -54,7 +53,11 @@ class Vending_machine
   
   #購入可能かどうかのチェック
   def can_purchase(name)
-    return @drinks[name][:price] <= @amount && @drinks[name][:stock].size >= 1 && @drinks[name][:stock][0].expiration_date >= Date.today
+    if name == :ランダム
+      return @random_list.any?{|name| @drinks[name][:price] <= @amount && @drinks[name][:stock].size >= 1 && @drinks[name][:stock][0].expiration_date >= Date.today}
+    else
+      return @drinks[name][:price] <= @amount && @drinks[name][:stock].size >= 1 && @drinks[name][:stock][0].expiration_date >= Date.today
+    end
   end
   
   #購入可能な商品のリスト
@@ -71,12 +74,23 @@ class Vending_machine
   #購入
   def purchase(name)
     change = @amount - @drinks[name][:price]
-    if (name == :ランダム && name = random_select || self.can_purchase(name)) && self.can_pay(change)
+    if self.can_purchase(name) && self.can_pay(change)
+      name = self.random_select if name == :ランダム
       @sale_amount += @drinks[name][:price]
-      self.fall
-      self.reduce_stock(change)
+      @tmp_stock.combine(@change_stock, @sale_stock)
+      @change_stock.reduce(change)
       self.refund(change)
       return @drinks[name][:stock].shift
+    end
+  end
+  
+  #釣銭が払えるかどうか
+  def can_pay(change)
+    ct_stock = @change_stock.merge(@tmp_stock){|key, v0, v1| v0 + v1}
+    if ct_stock.reduce(change) == 0
+      return true
+    else
+      return false
     end
   end
   
@@ -88,55 +102,4 @@ class Vending_machine
     end
   end
   
-  #tmpストックの金を釣銭ストックor売上ストックに落とす
-  def fall
-    @tmp_stock.each{|coin, num|
-      over = @change_stock[coin] + num - 10
-      if over.positive?
-        @sale_stock[coin] += over
-      else
-        @change_stock[coin] += num
-      end
-    }
-    @tmp.clear
-  end
-  
-  #tmpストックと釣銭ストックを合わせたもので釣銭が払えるかどうか
-  def can_pay(change)
-    ct_stock = @change_stock.merge(@tmp_stock){|key, v0, v1| v0 + v1}
-    @change_list.each{|coin|
-      quotient, change = change.div(coin), change.modulo(coin)
-      ct_stock[coin] -= quotient
-      if ct_stock[coin].negative?
-        change += ct_stock[coin].abs * coin
-      end
-    }
-    
-    if change == 0
-      return true
-    else
-      return false
-    end
-  end
-  
-  #釣銭ストックを出力する釣銭の分だけ減らす（＝釣銭を払う）
-  def reduce_stock(change)
-    @change_list.each{|coin|
-      quotient, change = change.div(coin), change.modulo(coin) 
-      @change_stock[coin] -= quotient
-      if @change_stock[coin].negative?
-        change += @change_stock[coin].abs * coin
-        @change_stock[coin] = 0
-      end
-    }
-  end
-  
-  #売り上げを釣銭ストックに回す
-  def merge_stock
-    @change_stock.merge!(@sale_stock){|key, v0, v1| v0 + v1}
-    @sale_stock.clear
-    return @change_stock
-  end
-  
 end
-
