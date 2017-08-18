@@ -6,7 +6,7 @@ require "./drink"
 require "./stock"
 
 class Vending_machine
-  attr_reader :amount, :sale_amount, :drinks, :change_stock, :sale_stock, :tmp_stock
+  attr_reader :amount, :sale_amount, :drinks, :change_stock, :sale_stock
   
   def initialize
     @amount, @sale_amount = 0, 0
