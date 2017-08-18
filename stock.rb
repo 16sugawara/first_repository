@@ -1,7 +1,7 @@
 class Stock < Hash
   @@change_list = [1000, 500, 100, 50, 10]
   
-  #ƒXƒgƒbƒN‚©‚ç’Þ‘K•ª‚ðŒ¸‚ç‚·
+  #ã‚¹ãƒˆãƒƒã‚¯ã‹ã‚‰é‡£éŠ­åˆ†ã‚’æ¸›ã‚‰ã™
   def reduce(change)
     @@change_list.each{|coin|
       quotient, change = change.div(coin), change.modulo(coin)
@@ -14,7 +14,7 @@ class Stock < Hash
     return change
   end
   
-  #2‚Â‚ÌƒXƒgƒbƒN‚ð‡‚í‚¹‚é(‘æˆêˆø”F‡¬æC‘æ“ñˆø”FƒI[ƒo[•ª‚ðŠi”[‚·‚éƒXƒgƒbƒN)
+  #2ã¤ã®ã‚¹ãƒˆãƒƒã‚¯ã‚’åˆã‚ã›ã‚‹(ç¬¬ä¸€å¼•æ•°ï¼šåˆæˆå…ˆï¼Œç¬¬äºŒå¼•æ•°ï¼šã‚ªãƒ¼ãƒãƒ¼åˆ†ã‚’æ ¼ç´ã™ã‚‹ã‚¹ãƒˆãƒƒã‚¯)
   def combine(stock1, stock2 = self)
     self.each{|coin, num|
       over = stock1[coin] + num - 10

@@ -1,5 +1,5 @@
 #!/usr/bin/ruby
-#encoding: shift_jis
+#coding: utf-8
 
 require 'set'
 require "./drink"
@@ -11,71 +11,71 @@ class Vending_machine
   def initialize
     @amount, @sale_amount = 0, 0
     @usable_money = Set.new [10, 50, 100, 500, 1000]
-    @random_list = Set.new [:‚¨’ƒ, :ƒR[ƒ‰, :ƒ_ƒCƒGƒbƒgƒR[ƒ‰]
+    @random_list = Set.new [:ãŠèŒ¶, :ã‚³ãƒ¼ãƒ©, :ãƒ€ã‚¤ã‚¨ãƒƒãƒˆã‚³ãƒ¼ãƒ©]
     
-    #’Ş‘KŠÇ——p‚ÉtmpƒXƒgƒbƒNC’Ş‘KƒXƒgƒbƒNC”„ãƒXƒgƒbƒN‚ğì‚é
+    #é‡£éŠ­ç®¡ç†ç”¨ã«tmpã‚¹ãƒˆãƒƒã‚¯ï¼Œé‡£éŠ­ã‚¹ãƒˆãƒƒã‚¯ï¼Œå£²ä¸Šã‚¹ãƒˆãƒƒã‚¯ã‚’ä½œã‚‹
     @tmp_stock, @sale_stock = Stock.new(0), Stock.new(0)
     @change_stock = Stock[10,10, 50,10, 100,10, 500,10, 1000,10]
     
-    #Å‰‚Ì¤•iƒR[ƒ‰‚ğŠi”[
+    #æœ€åˆã®å•†å“ã‚³ãƒ¼ãƒ©ã‚’æ ¼ç´
     @drinks = {}
-    self.register(:ƒR[ƒ‰, 120)
-    5.times{self.add(:ƒR[ƒ‰, 2019, 7, 12)}
+    self.register(:ã‚³ãƒ¼ãƒ©, 120)
+    5.times{self.add(:ã‚³ãƒ¼ãƒ©, 2019, 7, 12)}
   end
   
-  #¤•i‚Ì“o˜^i¤•i–¼, ’l’ij
+  #å•†å“ã®ç™»éŒ²ï¼ˆå•†å“å, å€¤æ®µï¼‰
   def register(name, price)
     @drinks.store(name, {:stock => [], :price => price})
   end
   
-  #¤•i‚Ì’Ç‰Á(¤•i–¼, ”N, Œ, “ú)
+  #å•†å“ã®è¿½åŠ (å•†å“å, å¹´, æœˆ, æ—¥)
   def add(name, year, month, date)
     drink = Drink.new(year, month, date)
     @drinks[name][:stock].push(drink)
   end
   
-  #ƒRƒCƒ“‚Ì“Š“ü
+  #ã‚³ã‚¤ãƒ³ã®æŠ•å…¥
   def insert(coin)
     if @usable_money.include?(coin)
       @tmp_stock[coin] += 1
       @amount += coin
     else
-      print("’Ş‘K#{coin}‰~\n")
+      print("é‡£éŠ­#{coin}å††\n")
     end
   end
   
-  #•¥‚¢–ß‚µ
+  #æ‰•ã„æˆ»ã—
   def refund(change = @amount)
-    print("’Ş‘K#{change}‰~\n")
+    print("é‡£éŠ­#{change}å††\n")
     @amount = 0
     @tmp_stock.clear
   end
   
-  #w“ü‰Â”\‚©‚Ç‚¤‚©‚Ìƒ`ƒFƒbƒN
+  #è³¼å…¥å¯èƒ½ã‹ã©ã†ã‹ã®ãƒã‚§ãƒƒã‚¯
   def can_purchase(name)
-    if name == :ƒ‰ƒ“ƒ_ƒ€
+    if name == :ãƒ©ãƒ³ãƒ€ãƒ 
       return @random_list.any?{|name| @drinks[name][:price] <= @amount && @drinks[name][:stock].size >= 1 && @drinks[name][:stock][0].expiration_date >= Date.today}
     else
       return @drinks[name][:price] <= @amount && @drinks[name][:stock].size >= 1 && @drinks[name][:stock][0].expiration_date >= Date.today
     end
   end
   
-  #w“ü‰Â”\‚È¤•i‚ÌƒŠƒXƒg
+  #è³¼å…¥å¯èƒ½ãªå•†å“ã®ãƒªã‚¹ãƒˆ
   def purchasable_list
-    #•Ô‚è’lF“Š“ü‹àŠzCİŒÉCÜ–¡ŠúŒÀ‚Ì“_‚Åw“ü‰Â”\‚ÈƒhƒŠƒ“ƒN‚Ì–¼‘OƒŠƒXƒg(W‡)
+    #è¿”ã‚Šå€¤ï¼šæŠ•å…¥é‡‘é¡ï¼Œåœ¨åº«ï¼Œè³å‘³æœŸé™ã®ç‚¹ã§è³¼å…¥å¯èƒ½ãªãƒ‰ãƒªãƒ³ã‚¯ã®åå‰ãƒªã‚¹ãƒˆ(é›†åˆ)
     list = Set.new []
     @drinks.each_key{|name|
       list.add(name) if self.can_purchase(name)
     }
-    list.add(:ƒ‰ƒ“ƒ_ƒ€) if list.intersect?(@random_list)
+    list.add(:ãƒ©ãƒ³ãƒ€ãƒ ) if list.intersect?(@random_list)
     return list
   end
   
-  #w“ü
+  #è³¼å…¥
   def purchase(name)
     change = @amount - @drinks[name][:price]
     if self.can_purchase(name) && self.can_pay(change)
-      name = self.random_select if name == :ƒ‰ƒ“ƒ_ƒ€
+      name = self.random_select if name == :ãƒ©ãƒ³ãƒ€ãƒ 
       @sale_amount += @drinks[name][:price]
       @tmp_stock.combine(@change_stock, @sale_stock)
       @change_stock.reduce(change)
@@ -84,7 +84,7 @@ class Vending_machine
     end
   end
   
-  #’Ş‘K‚ª•¥‚¦‚é‚©‚Ç‚¤‚©
+  #é‡£éŠ­ãŒæ‰•ãˆã‚‹ã‹ã©ã†ã‹
   def can_pay(change)
     ct_stock = @change_stock.merge(@tmp_stock){|key, v0, v1| v0 + v1}
     if ct_stock.reduce(change) == 0
@@ -94,7 +94,7 @@ class Vending_machine
     end
   end
   
-  #ƒ‰ƒ“ƒ_ƒ€ƒZƒŒƒNƒg
+  #ãƒ©ãƒ³ãƒ€ãƒ ã‚»ãƒ¬ã‚¯ãƒˆ
   def random_select
     list = @random_list.select{|name| self.can_purchase(name)}
     if list.size > 0
