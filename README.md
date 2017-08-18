@@ -1,4 +1,4 @@
-# first_repository
+# repository1
 *目的*：githubの練習，Classの練習  
 *中身*：TDDBC大阪2.0自動販売機問題のプログラム（ステップ1~7+応用2つ）
 
